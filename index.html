@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#c8d6c3" />
+    <title>下班倒计时</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=11" />
+  </head>
+  <body>
+    <div class="phone">
+      <div class="glow glow-a" aria-hidden="true"></div>
+      <div class="glow glow-b" aria-hidden="true"></div>
+
+      <header class="hero">
+        <button
+          type="button"
+          class="settings-btn"
+          id="open-settings"
+          aria-label="打开薪资设置"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.13.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.32.64.22l2.39-.96c.5.4 1.05.72 1.63.94l.36 2.54c.05.24.25.42.49.42h3.8c.24 0 .44-.18.49-.42l.36-2.54c.58-.23 1.13-.54 1.63-.94l2.39.96c.24.1.51 0 .64-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"
+            />
+          </svg>
+        </button>
+
+        <p class="eyebrow" id="basis-label">按月薪 · 税后</p>
+
+        <div class="countdown-block">
+          <p class="label">距离下班</p>
+          <p class="countdown" id="minutes-left">--</p>
+          <p class="unit">分钟</p>
+        </div>
+
+        <div class="earn-row">
+          <div class="earn today">
+            <p class="label">今天已赚</p>
+            <p class="amount" id="today-earned">¥0.00</p>
+          </div>
+          <div class="earn month">
+            <p class="label">本月累计</p>
+            <p class="amount" id="month-earned">¥0.00</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="rates" aria-label="费率换算">
+        <div class="rate">
+          <span class="rate-label">每天</span>
+          <span class="rate-value" id="per-day">¥0.00</span>
+        </div>
+        <div class="rate">
+          <span class="rate-label">每小时</span>
+          <span class="rate-value" id="per-hour">¥0.00</span>
+        </div>
+        <div class="rate">
+          <span class="rate-label">每分钟</span>
+          <span class="rate-value" id="per-minute">¥0.00</span>
+        </div>
+      </section>
+
+      <p class="hint" id="schedule-hint">工作日 09:00–18:00 · 午休 12:00–13:00</p>
+      <p class="hint"><a href="./test.html">打开测试模式（模拟下午 15:00）</a></p>
+    </div>
+
+    <section class="extras" aria-label="想买与摸鱼">
+      <div class="wish">
+        <div class="wish-left">
+          <label for="wish-price">想买的东西</label>
+          <div class="wish-input">
+            <span>¥</span>
+            <input
+              id="wish-price"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.01"
+              placeholder="0"
+            />
+          </div>
+        </div>
+        <div class="wish-right">
+          <p class="label">需要工作</p>
+          <p class="wish-days" id="wish-days">—</p>
+          <p class="unit">天</p>
+        </div>
+      </div>
+
+      <div class="slack">
+        <div class="slack-left">
+          <button type="button" class="slack-reset" id="slack-reset" aria-label="重置摸鱼累计">
+            <svg class="slack-reset-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13.5 8a5.5 5.5 0 1 1-1.4-3.6"
+              />
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13.5 3.2v3.2h-3.2"
+              />
+            </svg>
+          </button>
+          <p class="label">摸鱼累计</p>
+          <p class="slack-stats" id="slack-stats">累计 0 秒，等于 ¥0.00</p>
+        </div>
+        <div class="slack-right">
+          <button type="button" class="slack-btn" id="slack-toggle">开始摸鱼</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <aside class="sheet" id="settings-sheet" aria-hidden="true">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <header class="sheet-head">
+        <h2>薪资设置</h2>
+        <button type="button" class="close-btn" id="close-settings" aria-label="关闭">
+          ✕
+        </button>
+      </header>
+
+      <div class="tax-toggle" role="tablist" aria-label="税前税后">
+        <button type="button" role="tab" data-tax="pre" id="tax-pre">税前</button>
+        <button type="button" role="tab" data-tax="post" id="tax-post">税后</button>
+        <span class="tax-thumb" id="tax-thumb" aria-hidden="true"></span>
+      </div>
+
+      <div class="field-block">
+        <div class="field-head">
+          <label for="annual-salary">年薪</label>
+          <button type="button" class="pick-btn" data-basis="annual" id="pick-annual">
+            用年薪计算
+          </button>
+        </div>
+        <div class="money-input">
+          <span>¥</span>
+          <input id="annual-salary" type="number" inputmode="decimal" min="0" step="1" />
+        </div>
+        <p class="field-note">可含年终奖，不必等于月薪 × 12</p>
+      </div>
+
+      <div class="field-block">
+        <div class="field-head">
+          <label for="monthly-salary">月薪</label>
+          <button type="button" class="pick-btn" data-basis="monthly" id="pick-monthly">
+            用月薪计算
+          </button>
+        </div>
+        <div class="money-input">
+          <span>¥</span>
+          <input id="monthly-salary" type="number" inputmode="decimal" min="0" step="1" />
+        </div>
+      </div>
+
+      <div class="field-block expat-block">
+        <div class="field-head">
+          <label for="expat-usd">外派补贴（日）</label>
+          <button
+            type="button"
+            class="switch"
+            id="expat-toggle"
+            role="switch"
+            aria-checked="false"
+            aria-label="是否外派"
+          >
+            <span class="switch-thumb" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="money-input">
+          <span>$</span>
+          <input
+            id="expat-usd"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="0"
+          />
+        </div>
+        <div class="expat-rate-row">
+          <label for="usd-cny-rate">汇率 USD→CNY</label>
+          <input id="usd-cny-rate" type="number" inputmode="decimal" min="0" step="0.0001" />
+          <button type="button" class="link-btn" id="refresh-rate">刷新汇率</button>
+        </div>
+        <p class="field-note" id="expat-cny-note">合人民币 ¥0.00 / 天 · 关闭时不计入</p>
+      </div>
+
+      <div class="schedule-grid">
+        <label>
+          上班
+          <input id="work-start" type="time" />
+        </label>
+        <label>
+          下班
+          <input id="work-end" type="time" />
+        </label>
+        <label>
+          午休起
+          <input id="lunch-start" type="time" />
+        </label>
+        <label>
+          午休止
+          <input id="lunch-end" type="time" />
+        </label>
+      </div>
+
+      <label class="year-days">
+        年工作日（用年薪时）
+        <input id="work-days-year" type="number" min="1" max="366" step="1" />
+      </label>
+
+      <button type="button" class="save-btn" id="save-settings">保存</button>
+    </aside>
+
+    <script src="./app.js?v=9" type="module"></script>
+  </body>
+</html>
