@@ -1,0 +1,7 @@
+{
+  "name": "work-ticker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "下班倒计时 — static site + Vercel serverless admin telemetry",
+  "type": "module"
+}

@@ -193,6 +193,10 @@ body {
   animation: pulse-soft 2.4s ease-in-out infinite;
 }
 
+.countdown[hidden] {
+  display: none;
+}
+
 @keyframes pulse-soft {
   0%,
   100% {
@@ -207,6 +211,16 @@ body {
   margin: 6px 0 0;
   font-size: 15px;
   color: rgba(244, 248, 242, 0.72);
+}
+
+.countdown-block .unit.is-status-only {
+  margin-top: 10px;
+  font-family: "Syne", "Noto Sans SC", sans-serif;
+  font-size: clamp(1.75rem, 7vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tick);
+  text-shadow: 0 0 28px rgba(214, 255, 75, 0.2);
 }
 
 .earn-row {

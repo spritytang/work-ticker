@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>访客日志 · 管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #1a211c;
+        --panel: #243029;
+        --text: #f2f6f0;
+        --muted: rgba(242, 246, 240, 0.62);
+        --line: rgba(255, 255, 255, 0.1);
+        --accent: #d6ff4b;
+        --danger: #ff7b6b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Noto Sans SC", sans-serif;
+        background: radial-gradient(1200px 600px at 10% -10%, #2f4034, var(--bg));
+        color: var(--text);
+        padding: 24px 16px 48px;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.6rem;
+      }
+      .sub {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .gate,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .gate {
+        max-width: 420px;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input[type="password"],
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #1b241e;
+        color: var(--text);
+        font-size: 1rem;
+      }
+      button {
+        margin-top: 12px;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: var(--accent);
+        color: #152016;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--line);
+        margin-left: 8px;
+      }
+      .err {
+        color: var(--danger);
+        margin-top: 10px;
+        font-size: 0.9rem;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .count {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .table-wrap {
+        overflow: auto;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        min-width: 900px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      th {
+        background: #1c261f;
+        color: var(--muted);
+        font-weight: 500;
+        position: sticky;
+        top: 0;
+      }
+      tr:hover td {
+        background: rgba(214, 255, 75, 0.04);
+      }
+      .ua {
+        max-width: 220px;
+        word-break: break-word;
+        color: var(--muted);
+      }
+      .money {
+        font-family: "Space Grotesk", sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>访客日志</h1>
+      <p class="sub">需 ADMIN_SECRET。仅展示已保存设置的访客与可选 pageview。</p>
+
+      <section class="gate" id="gate">
+        <label for="secret">管理密钥</label>
+        <input id="secret" type="password" autocomplete="current-password" />
+        <button type="button" id="unlock">进入</button>
+        <p class="err" id="gate-err" hidden></p>
+      </section>
+
+      <section class="panel" id="panel" hidden>
+        <div class="toolbar">
+          <button type="button" id="refresh">刷新</button>
+          <button type="button" class="secondary" id="logout">退出</button>
+          <span class="count" id="count"></span>
+        </div>
+        <p class="err" id="list-err" hidden></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>类型</th>
+                <th>IP</th>
+                <th>设备 / UA</th>
+                <th>税</th>
+                <th>基准</th>
+                <th>年薪</th>
+                <th>月薪</th>
+                <th>外派</th>
+                <th>想买</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script>
+      const KEY = "work-ticker:admin-secret";
+      const gate = document.getElementById("gate");
+      const panel = document.getElementById("panel");
+      const secretInput = document.getElementById("secret");
+      const gateErr = document.getElementById("gate-err");
+      const listErr = document.getElementById("list-err");
+      const rows = document.getElementById("rows");
+      const count = document.getElementById("count");
+
+      function money(n) {
+        if (n == null || n === "") return "—";
+        const v = Number(n);
+        if (!Number.isFinite(v) || v === 0) return "—";
+        return "¥" + v.toLocaleString("zh-CN");
+      }
+
+      function deviceHint(ua) {
+        if (!ua) return "—";
+        if (/iPhone|iPad/i.test(ua)) return "iOS · " + ua.slice(0, 72);
+        if (/Android/i.test(ua)) return "Android · " + ua.slice(0, 72);
+        if (/Mac OS/i.test(ua)) return "Mac · " + ua.slice(0, 72);
+        if (/Windows/i.test(ua)) return "Windows · " + ua.slice(0, 72);
+        return ua.slice(0, 96);
+      }
+
+      async function load() {
+        const secret = sessionStorage.getItem(KEY) || "";
+        listErr.hidden = true;
+        const res = await fetch(
+          "/api/admin?secret=" + encodeURIComponent(secret) + "&limit=200",
+          { cache: "no-store" }
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          listErr.hidden = false;
+          listErr.textContent =
+            data.error === "unauthorized"
+              ? "密钥错误"
+              : data.hint || data.error || "加载失败";
+          if (res.status === 401) {
+            sessionStorage.removeItem(KEY);
+            panel.hidden = true;
+            gate.hidden = false;
+          }
+          return;
+        }
+        const visits = data.visits || [];
+        count.textContent = "共 " + visits.length + " 条";
+        rows.innerHTML = visits
+          .map((v) => {
+            const expat =
+              v.kind === "pageview"
+                ? "—"
+                : v.expatOn
+                  ? "$" + (Number(v.expatUsd) || 0)
+                  : "关";
+            return (
+              "<tr>" +
+              "<td>" +
+              (v.at || "—") +
+              "</td>" +
+              "<td>" +
+              (v.kind === "pageview" ? "浏览" : "设置") +
+              "</td>" +
+              "<td>" +
+              (v.ip || "—") +
+              "</td>" +
+              '<td class="ua">' +
+              deviceHint(v.ua) +
+              "</td>" +
+              "<td>" +
+              (v.kind === "pageview" ? "—" : v.taxMode === "pre" ? "税前" : "税后") +
+              "</td>" +
+              "<td>" +
+              (v.kind === "pageview" ? "—" : v.basis === "annual" ? "年薪" : "月薪") +
+              "</td>" +
+              '<td class="money">' +
+              (v.kind === "pageview" ? "—" : money(v.annual)) +
+              "</td>" +
+              '<td class="money">' +
+              (v.kind === "pageview" ? "—" : money(v.monthly)) +
+              "</td>" +
+              "<td>" +
+              expat +
+              "</td>" +
+              '<td class="money">' +
+              (v.kind === "pageview" ? "—" : money(v.wishPrice)) +
+              "</td>" +
+              "</tr>"
+            );
+          })
+          .join("");
+      }
+
+      document.getElementById("unlock").addEventListener("click", async () => {
+        gateErr.hidden = true;
+        const secret = secretInput.value.trim();
+        if (!secret) {
+          gateErr.hidden = false;
+          gateErr.textContent = "请输入密钥";
+          return;
+        }
+        sessionStorage.setItem(KEY, secret);
+        const res = await fetch(
+          "/api/admin?secret=" + encodeURIComponent(secret) + "&limit=1",
+          { cache: "no-store" }
+        );
+        if (!res.ok) {
+          sessionStorage.removeItem(KEY);
+          gateErr.hidden = false;
+          const data = await res.json().catch(() => ({}));
+          gateErr.textContent = data.hint || data.error || "无法进入";
+          return;
+        }
+        gate.hidden = true;
+        panel.hidden = false;
+        load();
+      });
+
+      document.getElementById("refresh").addEventListener("click", load);
+      document.getElementById("logout").addEventListener("click", () => {
+        sessionStorage.removeItem(KEY);
+        panel.hidden = true;
+        gate.hidden = false;
+        secretInput.value = "";
+      });
+
+      if (sessionStorage.getItem(KEY)) {
+        gate.hidden = true;
+        panel.hidden = false;
+        load();
+      }
+    </script>
+  </body>
+</html>

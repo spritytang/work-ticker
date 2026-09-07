@@ -1,9 +1,11 @@
 node_modules/
-package.json
 package-lock.json
 .deploy-args.json
 .vercel-deploy-payload.json
 .vercel-upload/
 .vercel/
+.env
+.env.*
+!.env.example
 modelcontextprotocol-sdk-*.tgz
 .DS_Store

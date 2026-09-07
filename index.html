@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=11" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
   </head>
   <body>
     <div class="phone">
@@ -36,7 +36,7 @@
           </svg>
         </button>
 
-        <p class="eyebrow" id="basis-label">按月薪 · 税后</p>
+        <p class="eyebrow" id="basis-label">请设置薪资</p>
 
         <div class="countdown-block">
           <p class="label">距离下班</p>
@@ -154,7 +154,14 @@
         </div>
         <div class="money-input">
           <span>¥</span>
-          <input id="annual-salary" type="number" inputmode="decimal" min="0" step="1" />
+          <input
+            id="annual-salary"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="请设置"
+          />
         </div>
         <p class="field-note">可含年终奖，不必等于月薪 × 12</p>
       </div>
@@ -168,7 +175,14 @@
         </div>
         <div class="money-input">
           <span>¥</span>
-          <input id="monthly-salary" type="number" inputmode="decimal" min="0" step="1" />
+          <input
+            id="monthly-salary"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="1"
+            placeholder="请设置"
+          />
         </div>
       </div>
 
@@ -232,6 +246,6 @@
       <button type="button" class="save-btn" id="save-settings">保存</button>
     </aside>
 
-    <script src="./app.js?v=9" type="module"></script>
+    <script src="./app.js?v=12" type="module"></script>
   </body>
 </html>

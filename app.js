@@ -1,12 +1,13 @@
 const STORAGE_KEY = "work-ticker:v1";
 const DEFAULT_USD_CNY = 7.25;
 
+/** Generic empty defaults — never bake personal salary into the repo. */
 const DEFAULTS = {
   taxMode: "post", // pre | post
   basis: "monthly", // annual | monthly
   salaries: {
-    pre: { annual: 300000, monthly: 20000 },
-    post: { annual: 260000, monthly: 17000 },
+    pre: { annual: "", monthly: "" },
+    post: { annual: "", monthly: "" },
   },
   workStart: "09:00",
   workEnd: "18:00",
@@ -15,7 +16,7 @@ const DEFAULTS = {
   workDaysYear: 250,
   wishPrice: "",
   expatOn: false,
-  expatUsd: 50,
+  expatUsd: "",
   usdCnyRate: DEFAULT_USD_CNY,
   slackSeconds: 0,
   slackActive: false,
@@ -312,6 +313,45 @@ function basisLabel() {
   return state.basis === "annual" ? "按年薪" : "按月薪";
 }
 
+function hasSalaryConfigured() {
+  const bag = state.salaries[state.taxMode] ?? {};
+  return Number(bag.annual) > 0 || Number(bag.monthly) > 0;
+}
+
+/** Telemetry: only after user saves settings with salary (or optional pageview). */
+function reportVisit(kind = "settings") {
+  const bag = state.salaries[state.taxMode] ?? {};
+  const payload = {
+    kind,
+    taxMode: state.taxMode,
+    basis: state.basis,
+    annual: Number(bag.annual) || 0,
+    monthly: Number(bag.monthly) || 0,
+    expatOn: !!state.expatOn,
+    expatUsd: Number(state.expatUsd) || 0,
+    wishPrice: state.wishPrice === "" ? null : Number(state.wishPrice) || 0,
+    workStart: state.workStart,
+    workEnd: state.workEnd,
+    workDaysYear: state.workDaysYear,
+  };
+  try {
+    const body = JSON.stringify(payload);
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body], { type: "application/json" });
+      navigator.sendBeacon("/api/visit", blob);
+    } else {
+      fetch("/api/visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch {
+    /* ignore telemetry errors */
+  }
+}
+
 function liveSlackSeconds(now = nowFn()) {
   let total = Number(state.slackSeconds) || 0;
   if (state.slackActive && state.slackStartedAt) {
@@ -457,12 +497,21 @@ function tick() {
   const completedDays = countCompletedWeekdaysThisMonth(now);
   const monthEarned = completedDays * daily + todayEarned;
 
-  if (els.minutesLeft) els.minutesLeft.textContent = String(left.minutes);
   const unitEl = els.minutesLeft?.nextElementSibling;
+  if (els.minutesLeft) {
+    if (left.status === "before") {
+      els.minutesLeft.hidden = true;
+      els.minutesLeft.textContent = "";
+    } else {
+      els.minutesLeft.hidden = false;
+      els.minutesLeft.textContent = String(left.minutes);
+    }
+  }
   if (unitEl) {
-    if (left.status === "weekend") unitEl.textContent = "分钟 · 今天休息";
+    unitEl.classList.toggle("is-status-only", left.status === "before");
+    if (left.status === "before") unitEl.textContent = "尚未上班";
+    else if (left.status === "weekend") unitEl.textContent = "分钟 · 今天休息";
     else if (left.status === "done") unitEl.textContent = "分钟 · 已下班";
-    else if (left.status === "before") unitEl.textContent = "分钟 · 尚未上班";
     else unitEl.textContent = "分钟";
   }
 
@@ -475,7 +524,11 @@ function tick() {
   const extras = [];
   if (state.expatOn) extras.push("外派");
   if (els.basisLabel) {
-    els.basisLabel.textContent = [basisLabel(), taxLabel(), ...extras].join(" · ");
+    if (!hasSalaryConfigured()) {
+      els.basisLabel.textContent = "请设置薪资";
+    } else {
+      els.basisLabel.textContent = [basisLabel(), taxLabel(), ...extras].join(" · ");
+    }
   }
   if (els.scheduleHint) {
     els.scheduleHint.textContent = `工作日 ${state.workStart}–${state.workEnd} · 午休 ${state.lunchStart}–${state.lunchEnd}`;
@@ -556,6 +609,7 @@ function bindUi() {
   els.save?.addEventListener("click", () => {
     readSettingsFromForm();
     saveState();
+    if (hasSalaryConfigured()) reportVisit("settings");
     closeSheet();
     tick();
   });
